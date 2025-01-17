@@ -3,3 +3,5 @@
 newvenv/
 
 llm_video.mp4.webm
+*.mp4
+*.webm
