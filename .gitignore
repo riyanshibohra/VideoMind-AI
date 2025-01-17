@@ -1,6 +1,6 @@
 .env
 
-newvenv/
+venv/
 
 llm_video.mp4.webm
 *.mp4
