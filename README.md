@@ -1,4 +1,5 @@
-# youtube-video-summarizer
+# YouTube Video Summarizer
+
 A Python-based project that automatically generates concise summaries of YouTube videos using state-of-the-art AI technologies.
 
 ## Overview
