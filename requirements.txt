@@ -90,3 +90,6 @@ wcwidth==0.2.13
 yarl==1.18.3
 yt-dlp==2025.1.15
 zipp==3.21.0
+streamlit
+whisper
+langchain-openai
