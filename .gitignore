@@ -5,6 +5,8 @@ env/
 .venv/
 ENV/
 
+cache/
+
 # Python
 __pycache__/
 *.py[cod]

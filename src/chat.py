@@ -6,11 +6,13 @@ from src.utils import get_video_context
 
 def create_chat_prompt():
     """Create the chat prompt template"""
-    prompt_template = """You are a helpful AI assistant that answers questions about YouTube videos based on their transcripts. 
-    Use the following pieces of context from the video transcript to answer the question. If you don't know the answer, just say that 
-    you don't know, don't try to make up an answer.
+    prompt_template = """You are a helpful AI assistant that answers questions about multiple YouTube videos based on their transcripts. 
+    Use the following pieces of context from the video transcripts to answer the question. Each piece of context includes the source video URL.
+    If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    When answering, try to combine information from multiple videos if relevant, and mention which video(s) you're getting the information from.
 
-    Context from video: {context}
+    Context from videos:
+    {context}
 
     Previous conversation:
     {chat_history}
@@ -23,8 +25,8 @@ def create_chat_prompt():
         template=prompt_template
     )
 
-def get_chatbot(video_url):
-    """Create a chatbot instance for the video"""
+def get_chatbot(session_id):
+    """Create a chatbot instance for the session"""
     # Create LLM
     llm = ChatOpenAI(
         model_name="gpt-3.5-turbo",
@@ -50,7 +52,7 @@ def get_chatbot(video_url):
     
     def get_response(user_input):
         # Get relevant context from vector store
-        context = get_video_context(user_input, video_url)
+        context = get_video_context(user_input, session_id)
         
         # Get response
         response = conversation.predict(

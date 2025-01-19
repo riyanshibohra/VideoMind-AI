@@ -1,28 +1,34 @@
 import streamlit as st
 import os
-from src.utils import download_mp4_from_youtube, create_vector_store
+from src.utils import (
+    download_mp4_from_youtube, 
+    create_vector_store, 
+    cleanup_temp_files,
+    process_video
+)
 from src.transcriber import transcribe_video
 from src.summarizer import summarize_text
 from src.chat import get_chatbot
 from dotenv import load_dotenv
 import pyperclip
+import concurrent.futures
 
 # Load environment variables
 load_dotenv()
 
 # Initialize session state
-if 'summary' not in st.session_state:
-    st.session_state.summary = None
-if 'transcript' not in st.session_state:
-    st.session_state.transcript = None
+if 'summaries' not in st.session_state:
+    st.session_state.summaries = {}
+if 'transcripts' not in st.session_state:
+    st.session_state.transcripts = {}
 if 'show_copy_success' not in st.session_state:
     st.session_state.show_copy_success = False
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'chatbot' not in st.session_state:
     st.session_state.chatbot = None
-if 'current_video' not in st.session_state:
-    st.session_state.current_video = None
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = None
 
 # Page configuration
 st.set_page_config(
@@ -114,10 +120,10 @@ def main():
         st.markdown("---")
         st.markdown("""
         ## About
-        This tool helps you quickly understand YouTube videos by providing AI-powered summaries.
+        This tool helps you quickly understand multiple YouTube videos by providing AI-powered summaries.
         
         ### Features
-        - 🎥 Video transcription
+        - 🎥 Multi-video support
         - 📝 Smart summarization
         - ⚡ Fast processing
         - 💬 Interactive chat
@@ -126,19 +132,25 @@ def main():
     # Main content
     st.title("YouTube Video Summarizer")
     st.markdown("""
-    Enter a YouTube video URL below to get started. The AI will transcribe the video 
-    and generate a concise summary of its content.
+    Enter YouTube video URLs below (one per line) to get started. The AI will transcribe the videos, 
+    generate summaries, and allow you to ask questions about all videos together.
     """)
     
     # URL input with validation
-    youtube_url = st.text_input("Enter YouTube Video URL", 
-                               placeholder="https://www.youtube.com/watch?v=...")
+    youtube_urls = st.text_area(
+        "Enter YouTube Video URLs (one per line):", 
+        height=100,
+        placeholder="https://www.youtube.com/watch?v=...\nhttps://www.youtube.com/watch?v=..."
+    )
     
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
-        process_button = st.button("🚀 Generate Summary", use_container_width=True)
+        process_button = st.button("🚀 Process Videos", use_container_width=True)
     
-    if youtube_url and process_button:
+    if youtube_urls and process_button:
+        # Split URLs and clean them
+        urls = [url.strip() for url in youtube_urls.split('\n') if url.strip()]
+        
         try:
             # Create progress bar
             progress_container = st.container()
@@ -146,77 +158,91 @@ def main():
                 progress_bar = st.progress(0)
                 status_text = st.empty()
             
-            # Download video
-            status_text.info("📥 Downloading video...")
-            progress_bar.progress(20)
-            video_path = download_mp4_from_youtube(youtube_url)
+            # Process videos in parallel
+            status_text.info("🎥 Processing videos...")
+            texts_dict = {}
             
-            # Transcribe video
-            status_text.info("🎯 Transcribing video...")
-            progress_bar.progress(40)
-            transcript = transcribe_video(video_path)
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                # Submit all video processing tasks
+                future_to_url = {
+                    executor.submit(process_video, url, transcribe_video): url 
+                    for url in urls
+                }
+                
+                # Process results as they complete
+                completed = 0
+                for future in concurrent.futures.as_completed(future_to_url):
+                    url = future_to_url[future]
+                    try:
+                        url, transcript = future.result()
+                        if transcript:  # Skip failed transcriptions
+                            texts_dict[url] = transcript
+                            
+                            # Generate summary in parallel
+                            summary = summarize_text(transcript)
+                            st.session_state.transcripts[url] = transcript
+                            st.session_state.summaries[url] = summary
+                            
+                    except Exception as e:
+                        st.error(f"Error processing {url}: {str(e)}")
+                    
+                    # Update progress
+                    completed += 1
+                    progress = int((completed / len(urls)) * 90)  # Leave 10% for vector store creation
+                    progress_bar.progress(progress)
+                    status_text.info(f"✅ Processed {completed}/{len(urls)} videos...")
             
-            # Create vector store (hide technical details)
-            status_text.info("🧠 Processing content...")
-            progress_bar.progress(60)
-            create_vector_store(transcript, youtube_url)
-            
-            # Generate summary
-            status_text.info("🤖 Generating summary...")
-            progress_bar.progress(80)
-            summary = summarize_text(transcript)
-            
-            # Store in session state
-            st.session_state.summary = summary
-            st.session_state.transcript = transcript
-            st.session_state.current_video = youtube_url
-            st.session_state.chatbot = get_chatbot(youtube_url)
-            st.session_state.messages = []
-            
-            # Complete
-            progress_bar.progress(100)
-            status_text.success("✅ Processing complete!")
-            
-            # Clean up
-            if os.path.exists(video_path):
-                os.remove(video_path)
+            if texts_dict:
+                # Create vector store with all transcripts
+                status_text.info("🧠 Creating vector store...")
+                vectorstore, session_id = create_vector_store(texts_dict)
+                
+                # Store session info
+                st.session_state.session_id = session_id
+                st.session_state.chatbot = get_chatbot(session_id)
+                st.session_state.messages = []
+                
+                # Complete
+                progress_bar.progress(100)
+                status_text.success("✅ Processing complete!")
+            else:
+                status_text.error("❌ No videos were successfully processed")
                 
         except Exception as e:
-            st.error("⚠️ An error occurred. Please check your URL and try again.")
+            st.error("⚠️ An error occurred. Please check your URLs and try again.")
             st.write(f"<span class='error-message'>Details: {str(e)}</span>", unsafe_allow_html=True)
+            cleanup_temp_files(urls)
 
     # Display results if available
-    if st.session_state.summary and st.session_state.transcript:
+    if st.session_state.summaries:
         st.markdown("---")
-        tabs = st.tabs(["📝 Summary", "🎯 Full Transcript", "💬 Chat"])
+        tabs = st.tabs(["📝 Summaries", "🎯 Transcripts", "💬 Chat"])
         
         with tabs[0]:
-            st.markdown("### Video Summary")
-            st.markdown(st.session_state.summary)
-            col1, col2, col3 = st.columns([1, 8, 1])
-            with col1:
-                if st.button("📋 Copy", key="copy_summary"):
-                    copy_to_clipboard(st.session_state.summary, "summary")
-            with col2:
-                if st.session_state.get('show_copy_success_summary', False):
-                    st.success("✅ Summary copied to clipboard!")
-                    st.session_state['show_copy_success_summary'] = False
+            st.markdown("### Video Summaries")
+            for url, summary in st.session_state.summaries.items():
+                with st.expander(f"Summary for {url}"):
+                    st.markdown(summary)
+                    if st.button("📋 Copy", key=f"copy_summary_{url}"):
+                        copy_to_clipboard(summary, f"summary_{url}")
+                    if st.session_state.get(f'show_copy_success_summary_{url}', False):
+                        st.success("✅ Summary copied to clipboard!")
+                        st.session_state[f'show_copy_success_summary_{url}'] = False
                 
         with tabs[1]:
-            st.markdown("### Full Transcript")
-            st.markdown(st.session_state.transcript)
-            col1, col2, col3 = st.columns([1, 8, 1])
-            with col1:
-                if st.button("📋 Copy", key="copy_transcript"):
-                    copy_to_clipboard(st.session_state.transcript, "transcript")
-            with col2:
-                if st.session_state.get('show_copy_success_transcript', False):
-                    st.success("✅ Transcript copied to clipboard!")
-                    st.session_state['show_copy_success_transcript'] = False
+            st.markdown("### Full Transcripts")
+            for url, transcript in st.session_state.transcripts.items():
+                with st.expander(f"Transcript for {url}"):
+                    st.markdown(transcript)
+                    if st.button("📋 Copy", key=f"copy_transcript_{url}"):
+                        copy_to_clipboard(transcript, f"transcript_{url}")
+                    if st.session_state.get(f'show_copy_success_transcript_{url}', False):
+                        st.success("✅ Transcript copied to clipboard!")
+                        st.session_state[f'show_copy_success_transcript_{url}'] = False
         
         with tabs[2]:
-            st.markdown("### Chat with Video Content")
-            st.markdown("Ask questions about the video content and get AI-powered answers.")
+            st.markdown("### Chat about All Videos")
+            st.markdown("Ask questions about any of the videos - the AI will combine information from all of them!")
             
             # Display chat messages
             for message in st.session_state.messages:
@@ -224,7 +250,7 @@ def main():
                     st.markdown(message["content"])
             
             # Chat input
-            if prompt := st.chat_input("Ask a question about the video..."):
+            if prompt := st.chat_input("Ask a question about the videos..."):
                 # Add user message
                 st.session_state.messages.append({"role": "user", "content": prompt})
                 with st.chat_message("user"):
