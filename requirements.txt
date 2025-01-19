@@ -93,3 +93,4 @@ zipp==3.21.0
 streamlit
 whisper
 langchain-openai
+pyperclip
