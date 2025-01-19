@@ -35,6 +35,8 @@ if 'processed_urls' not in st.session_state:
     st.session_state.processed_urls = set()
 if 'show_input' not in st.session_state:
     st.session_state.show_input = True
+if 'current_tab' not in st.session_state:
+    st.session_state.current_tab = "Summaries"
 
 # Page configuration
 st.set_page_config(
@@ -175,28 +177,30 @@ st.markdown("""
     .chat-window {
         display: flex;
         flex-direction: column;
-        height: calc(100vh - 300px);
-        min-height: 400px;
+        height: 600px;
         background-color: rgba(255, 255, 255, 0.05);
         border-radius: 8px;
         margin: 1rem 0;
+        position: relative;
     }
     
     .chat-messages {
-        flex-grow: 1;
+        flex: 1;
         overflow-y: auto;
         padding: 1rem;
         display: flex;
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
     
     .chat-input-container {
         position: sticky;
         bottom: 0;
+        left: 0;
+        right: 0;
         background-color: #0E1117;
         padding: 1rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
-        margin-top: auto;
+        z-index: 100;
     }
     
     .message-container {
@@ -205,8 +209,23 @@ st.markdown("""
     
     /* Override Streamlit's default padding for chat messages */
     .stChatMessage {
-        padding: 0.5rem !important;
         background-color: transparent !important;
+        padding: 0.5rem !important;
+    }
+    
+    .stChatMessage > div {
+        padding: 0.5rem !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    /* User message styling */
+    .stChatMessage[data-testid="user-message"] > div {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Assistant message styling */
+    .stChatMessage[data-testid="assistant-message"] > div {
+        background-color: rgba(255, 255, 255, 0.05) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -309,29 +328,25 @@ def display_chat():
     chat_window = st.container()
     
     with chat_window:
-        # Create a container for the entire chat interface
-        st.markdown('<div class="chat-window">', unsafe_allow_html=True)
-        
-        # Messages container (displayed in reverse order)
+        # Create a container for messages
         messages_container = st.container()
         
-        # Input container at the bottom
-        st.markdown('<div class="chat-input-container">', unsafe_allow_html=True)
-        if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            response = st.session_state.chatbot(prompt)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Create input container at the bottom
+        input_container = st.container()
         
-        # Display messages in reverse chronological order
+        # Handle chat input first
+        with input_container:
+            if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                response = st.session_state.chatbot(prompt)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.rerun()  # Rerun to update messages immediately
+        
+        # Display messages
         with messages_container:
-            st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
-            for message in reversed(st.session_state.messages):
+            for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
     # Sidebar
@@ -386,10 +401,16 @@ def main():
         for url in st.session_state.processed_urls:
             st.markdown(f"- {url}")
         
-        # Create tabs without persistence
-        tabs = st.tabs(["📝 Summaries", "💬 Chat", "🎯 Transcripts"])
+        # Tab selection
+        tab_options = ["📝 Summaries", "💬 Chat", "🎯 Transcripts"]
+        selected_tab = st.radio("", tab_options, horizontal=True, label_visibility="collapsed", 
+                              index=tab_options.index(st.session_state.current_tab) if st.session_state.current_tab in tab_options else 0)
+        st.session_state.current_tab = selected_tab
         
-        with tabs[0]:
+        st.markdown("---")
+        
+        # Display content based on selected tab
+        if selected_tab == "📝 Summaries":
             st.markdown("### Video Summaries")
             for url, summary in st.session_state.summaries.items():
                 with st.expander(f"Summary for {url}"):
@@ -400,10 +421,10 @@ def main():
                         st.success("✅ Summary copied to clipboard!")
                         st.session_state[f'show_copy_success_summary_{url}'] = False
         
-        with tabs[1]:
+        elif selected_tab == "💬 Chat":
             display_chat()
         
-        with tabs[2]:
+        else:  # Transcripts tab
             st.markdown("### Full Transcripts")
             for url, transcript in st.session_state.transcripts.items():
                 with st.expander(f"Transcript for {url}"):
