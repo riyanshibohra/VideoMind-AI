@@ -17,12 +17,19 @@ By automating the summarization process, users can quickly grasp the key points 
 ## Project Structure
 ```
 youtube-video-summarizer/
-├── app.py              # Main Streamlit application
-├── transcriber.py      # Handles video transcription using Whisper
-├── summarizer.py       # Manages text summarization with LangChain
-├── utils.py           # Utility functions
+├── src/                  # Source code
+│   ├── app.py           # Main Streamlit application
+│   ├── transcriber.py   # Handles video transcription using Whisper
+│   ├── summarizer.py    # Manages text summarization with LangChain
+│   └── utils.py         # Utility functions
+├── data/                # Data directory
+│   ├── temp/           # Temporary files
+│   └── transcripts/    # Stored transcripts
+├── tests/              # Test files
 ├── requirements.txt    # Project dependencies
-└── .env               # Environment variables (not tracked in git)
+├── README.md          # Project documentation
+├── LICENSE            # MIT License
+└── .env              # Environment variables (not tracked in git)
 ```
 
 ## Prerequisites

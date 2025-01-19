@@ -1,8 +1,8 @@
 import streamlit as st
 import os
-from utils import download_mp4_from_youtube
-from transcriber import transcribe_video
-from summarizer import summarize_text
+from src.utils import download_mp4_from_youtube
+from src.transcriber import transcribe_video
+from src.summarizer import summarize_text
 from dotenv import load_dotenv
 
 # Load environment variables
