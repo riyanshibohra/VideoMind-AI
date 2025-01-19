@@ -1,8 +1,9 @@
 import streamlit as st
 import os
-from src.utils import download_mp4_from_youtube
+from src.utils import download_mp4_from_youtube, create_vector_store
 from src.transcriber import transcribe_video
 from src.summarizer import summarize_text
+from src.chat import get_chatbot
 from dotenv import load_dotenv
 import pyperclip
 
@@ -16,6 +17,12 @@ if 'transcript' not in st.session_state:
     st.session_state.transcript = None
 if 'show_copy_success' not in st.session_state:
     st.session_state.show_copy_success = False
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+if 'chatbot' not in st.session_state:
+    st.session_state.chatbot = None
+if 'current_video' not in st.session_state:
+    st.session_state.current_video = None
 
 # Page configuration
 st.set_page_config(
@@ -74,6 +81,21 @@ st.markdown("""
     .stTextInput > div > div > input {
         background-color: #f8f9fa;
     }
+    .chat-message {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+    .user-message {
+        background-color: #f8f9fa;
+        margin-left: 2rem;
+    }
+    .assistant-message {
+        background-color: #f1f8ff;
+        margin-right: 2rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -98,6 +120,7 @@ def main():
         - 🎥 Video transcription
         - 📝 Smart summarization
         - ⚡ Fast processing
+        - 💬 Interactive chat
         """)
 
     # Main content
@@ -125,22 +148,30 @@ def main():
             
             # Download video
             status_text.info("📥 Downloading video...")
-            progress_bar.progress(25)
+            progress_bar.progress(20)
             video_path = download_mp4_from_youtube(youtube_url)
             
             # Transcribe video
             status_text.info("🎯 Transcribing video...")
-            progress_bar.progress(50)
+            progress_bar.progress(40)
             transcript = transcribe_video(video_path)
+            
+            # Create vector store
+            status_text.info("🔍 Creating vector store...")
+            progress_bar.progress(60)
+            create_vector_store(transcript, youtube_url)
             
             # Generate summary
             status_text.info("🤖 Generating summary...")
-            progress_bar.progress(75)
+            progress_bar.progress(80)
             summary = summarize_text(transcript)
             
             # Store in session state
             st.session_state.summary = summary
             st.session_state.transcript = transcript
+            st.session_state.current_video = youtube_url
+            st.session_state.chatbot = get_chatbot(youtube_url)
+            st.session_state.messages = []
             
             # Complete
             progress_bar.progress(100)
@@ -157,7 +188,7 @@ def main():
     # Display results if available
     if st.session_state.summary and st.session_state.transcript:
         st.markdown("---")
-        tabs = st.tabs(["📝 Summary", "🎯 Full Transcript"])
+        tabs = st.tabs(["📝 Summary", "🎯 Full Transcript", "💬 Chat"])
         
         with tabs[0]:
             st.markdown("### Video Summary")
@@ -182,6 +213,28 @@ def main():
                 if st.session_state.get('show_copy_success_transcript', False):
                     st.success("✅ Transcript copied to clipboard!")
                     st.session_state['show_copy_success_transcript'] = False
+        
+        with tabs[2]:
+            st.markdown("### Chat with Video Content")
+            st.markdown("Ask questions about the video content and get AI-powered answers.")
+            
+            # Display chat messages
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+            
+            # Chat input
+            if prompt := st.chat_input("Ask a question about the video..."):
+                # Add user message
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                
+                # Get bot response
+                with st.chat_message("assistant"):
+                    response = st.session_state.chatbot(prompt)
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main() 
