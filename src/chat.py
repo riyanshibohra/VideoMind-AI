@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
+from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from src.utils import get_video_context
 
@@ -13,13 +13,13 @@ def create_chat_prompt():
     Context from video: {context}
 
     Previous conversation:
-    {history}
+    {chat_history}
 
-    Human: {input}
+    Human: {question}
     Assistant:"""
     
     return PromptTemplate(
-        input_variables=["context", "history", "input"],
+        input_variables=["context", "chat_history", "question"],
         template=prompt_template
     )
 
@@ -31,20 +31,20 @@ def get_chatbot(video_url):
         temperature=0.7
     )
     
-    # Create memory with proper input/output keys
+    # Create memory
     memory = ConversationBufferMemory(
-        input_key="input",
-        memory_key="history"
+        memory_key="chat_history",
+        input_key="question"
     )
     
     # Create prompt
     prompt = create_chat_prompt()
     
     # Create conversation chain
-    conversation = ConversationChain(
+    conversation = LLMChain(
         llm=llm,
-        memory=memory,
         prompt=prompt,
+        memory=memory,
         verbose=False
     )
     
@@ -52,10 +52,10 @@ def get_chatbot(video_url):
         # Get relevant context from vector store
         context = get_video_context(user_input, video_url)
         
-        # Get response with proper input keys
+        # Get response
         response = conversation.predict(
             context=context,
-            input=user_input
+            question=user_input
         )
         
         return response
