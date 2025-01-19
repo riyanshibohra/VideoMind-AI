@@ -5,3 +5,5 @@ venv/
 llm_video.mp4.webm
 *.mp4
 *.webm
+
+__pycache__/
