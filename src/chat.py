@@ -12,13 +12,14 @@ def create_chat_prompt():
 
     Context from video: {context}
 
-    Current conversation:
+    Previous conversation:
     {history}
+
     Human: {input}
     Assistant:"""
     
     return PromptTemplate(
-        input_variables=["history", "input", "context"],
+        input_variables=["context", "history", "input"],
         template=prompt_template
     )
 
@@ -30,8 +31,11 @@ def get_chatbot(video_url):
         temperature=0.7
     )
     
-    # Create memory
-    memory = ConversationBufferMemory()
+    # Create memory with proper input/output keys
+    memory = ConversationBufferMemory(
+        input_key="input",
+        memory_key="history"
+    )
     
     # Create prompt
     prompt = create_chat_prompt()
@@ -48,10 +52,10 @@ def get_chatbot(video_url):
         # Get relevant context from vector store
         context = get_video_context(user_input, video_url)
         
-        # Get response
+        # Get response with proper input keys
         response = conversation.predict(
-            input=user_input,
-            context=context
+            context=context,
+            input=user_input
         )
         
         return response

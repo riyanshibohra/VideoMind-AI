@@ -156,8 +156,8 @@ def main():
             progress_bar.progress(40)
             transcript = transcribe_video(video_path)
             
-            # Create vector store
-            status_text.info("🔍 Creating vector store...")
+            # Create vector store (hide technical details)
+            status_text.info("🧠 Processing content...")
             progress_bar.progress(60)
             create_vector_store(transcript, youtube_url)
             
