@@ -78,26 +78,58 @@ def get_embeddings():
     """Cached embeddings instance"""
     return OpenAIEmbeddings()
 
+def get_video_info(url):
+    """Get video title and other info from YouTube URL"""
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'extract_flat': True
+    }
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            info = ydl.extract_info(url, download=False)
+            return {
+                'title': info.get('title', 'Untitled Video'),
+                'url': url
+            }
+        except Exception as e:
+            print(f"Error getting video info: {str(e)}")
+            return {
+                'title': 'Untitled Video',
+                'url': url
+            }
+
 def process_video(url, transcribe_func):
     """Process a single video - download and transcribe"""
     try:
         # Check cache first
         cached_data = load_from_cache(url)
         if cached_data and 'transcript' in cached_data:
-            return url, cached_data['transcript']
+            # Get video info even for cached videos
+            video_info = get_video_info(url)
+            cached_data['title'] = video_info['title']
+            return url, cached_data
 
+        # Get video info
+        video_info = get_video_info(url)
+        
         # Download and transcribe
         video_path = download_mp4_from_youtube(url)
         transcript = transcribe_func(video_path)
         
-        # Cache the result
-        save_to_cache(url, {'transcript': transcript})
+        # Cache the result with title
+        result = {
+            'transcript': transcript,
+            'title': video_info['title']
+        }
+        save_to_cache(url, result)
         
         # Cleanup
         if os.path.exists(video_path):
             os.remove(video_path)
             
-        return url, transcript
+        return url, result
     except Exception as e:
         print(f"Error processing {url}: {str(e)}")
         return url, None

@@ -36,7 +36,11 @@ if 'processed_urls' not in st.session_state:
 if 'show_input' not in st.session_state:
     st.session_state.show_input = True
 if 'current_tab' not in st.session_state:
-    st.session_state.current_tab = "Summaries"
+    st.session_state.current_tab = "📝 Summaries"
+if 'tab_key' not in st.session_state:
+    st.session_state.tab_key = 0
+if 'video_titles' not in st.session_state:
+    st.session_state.video_titles = {}
 
 # Page configuration
 st.set_page_config(
@@ -227,6 +231,25 @@ st.markdown("""
     .stChatMessage[data-testid="assistant-message"] > div {
         background-color: rgba(255, 255, 255, 0.05) !important;
     }
+    
+    .video-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .video-url {
+        font-size: 0.9rem;
+        color: #8b949e;
+        word-break: break-all;
+    }
+    
+    .video-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -259,13 +282,14 @@ def process_videos(urls):
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
-                    url, transcript = future.result()
-                    if transcript:
-                        texts_dict[url] = transcript
-                        summary = summarize_text(transcript)
-                        st.session_state.transcripts[url] = transcript
+                    url, result = future.result()
+                    if result and 'transcript' in result:
+                        texts_dict[url] = result['transcript']
+                        st.session_state.transcripts[url] = result['transcript']
+                        summary = summarize_text(result['transcript'])
                         st.session_state.summaries[url] = summary
                         st.session_state.processed_urls.add(url)
+                        st.session_state.video_titles[url] = result.get('title', 'Untitled Video')
                 except Exception as e:
                     st.error(f"Error processing {url}: {str(e)}")
                 
@@ -399,21 +423,41 @@ def main():
         # Show current videos
         st.markdown("### 🎥 Current Videos")
         for url in st.session_state.processed_urls:
-            st.markdown(f"- {url}")
+            st.markdown(
+                f"""
+                <div class="video-card">
+                    <div class="video-title">📺 {st.session_state.video_titles.get(url, 'Untitled Video')}</div>
+                    <div class="video-url">{url}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
         
-        # Tab selection
+        # Simplified tab selection
         tab_options = ["📝 Summaries", "💬 Chat", "🎯 Transcripts"]
-        selected_tab = st.radio("", tab_options, horizontal=True, label_visibility="collapsed", 
-                              index=tab_options.index(st.session_state.current_tab) if st.session_state.current_tab in tab_options else 0)
-        st.session_state.current_tab = selected_tab
+        current_tab_index = tab_options.index(st.session_state.current_tab)
+        
+        selected_tab = st.radio(
+            "",
+            tab_options,
+            horizontal=True,
+            label_visibility="collapsed",
+            index=current_tab_index
+        )
+        
+        # Update current tab if changed
+        if selected_tab != st.session_state.current_tab:
+            st.session_state.current_tab = selected_tab
+            st.rerun()
         
         st.markdown("---")
         
         # Display content based on selected tab
-        if selected_tab == "📝 Summaries":
+        if st.session_state.current_tab == "📝 Summaries":
             st.markdown("### Video Summaries")
             for url, summary in st.session_state.summaries.items():
-                with st.expander(f"Summary for {url}"):
+                title = st.session_state.video_titles.get(url, 'Untitled Video')
+                with st.expander(f"Summary for: {title}"):
                     st.markdown(summary)
                     if st.button("📋 Copy", key=f"copy_summary_{url}"):
                         copy_to_clipboard(summary, f"summary_{url}")
@@ -421,13 +465,14 @@ def main():
                         st.success("✅ Summary copied to clipboard!")
                         st.session_state[f'show_copy_success_summary_{url}'] = False
         
-        elif selected_tab == "💬 Chat":
+        elif st.session_state.current_tab == "💬 Chat":
             display_chat()
         
         else:  # Transcripts tab
             st.markdown("### Full Transcripts")
             for url, transcript in st.session_state.transcripts.items():
-                with st.expander(f"Transcript for {url}"):
+                title = st.session_state.video_titles.get(url, 'Untitled Video')
+                with st.expander(f"Transcript for: {title}"):
                     st.markdown(transcript)
                     if st.button("📋 Copy", key=f"copy_transcript_{url}"):
                         copy_to_clipboard(transcript, f"transcript_{url}")
