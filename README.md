@@ -25,5 +25,6 @@ By automating the summarization process, users can quickly grasp the key points 
 - OpenAI's Whisper
 - LangChain
 - DeepLake
+- Pinecone
 - YouTube-DL
 - Various Python libraries for audio processing
