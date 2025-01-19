@@ -250,6 +250,50 @@ st.markdown("""
         border-radius: 8px;
         margin-bottom: 0.5rem;
     }
+    
+    .sidebar-video-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+    
+    .sidebar-video-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        word-break: break-word;
+    }
+    
+    .sidebar-video-url {
+        font-size: 0.8rem;
+        color: #8b949e;
+        word-break: break-all;
+    }
+    
+    /* Override Streamlit's default button styling for delete buttons */
+    .stButton > button.delete-btn {
+        background-color: transparent !important;
+        color: #666 !important;
+        border: none !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.8rem !important;
+        opacity: 0.7;
+        transition: all 0.2s;
+    }
+    
+    .stButton > button.delete-btn:hover {
+        background-color: rgba(255, 59, 59, 0.1) !important;
+        color: #ff3b3b !important;
+        opacity: 1;
+    }
+    
+    .add-video-section {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -307,6 +351,12 @@ def process_videos(urls):
             progress_bar.progress(100)
             status_text.success("✅ Processing complete!")
             st.session_state.show_input = False
+            
+            # Clear the progress indicators and rerun to show tabs
+            progress_bar.empty()
+            status_text.empty()
+            st.rerun()
+            
             return True
         else:
             status_text.error("❌ No videos were successfully processed")
@@ -319,29 +369,49 @@ def process_videos(urls):
         return False
 
 def show_video_management():
-    """Show the video management interface"""
-    st.markdown("### 📺 Managed Videos")
+    """Show the video management interface in the sidebar"""
+    st.markdown("### 📺 Current Videos")
     
-    # Display current videos
+    # Display current videos with delete buttons
     if st.session_state.processed_urls:
         for url in st.session_state.processed_urls:
-            col1, col2 = st.columns([6, 1])
+            title = st.session_state.video_titles.get(url, 'Untitled Video')
+            
+            # Create columns for video info and delete button
+            col1, col2 = st.columns([0.85, 0.15])
+            
             with col1:
-                st.write(url)
+                st.markdown(
+                    f"""
+                    <div class="sidebar-video-card">
+                        <div class="sidebar-video-title">{title}</div>
+                        <div class="sidebar-video-url">{url}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            
             with col2:
-                if st.button("🗑️", key=f"delete_{url}"):
+                if st.button("🗑️", key=f"delete_{url}", help="Delete video", type="secondary"):
                     st.session_state.processed_urls.remove(url)
                     st.session_state.summaries.pop(url, None)
                     st.session_state.transcripts.pop(url, None)
+                    st.session_state.video_titles.pop(url, None)
                     st.rerun()
+    else:
+        st.info("No videos added yet")
     
-    # Add new videos
-    new_url = st.text_input("Add new video URL:")
-    if new_url and st.button("Add Video"):
+    # Add new video section
+    st.markdown("### ➕ Add New Video")
+    new_url = st.text_input("YouTube URL:", key="new_video_url")
+    if new_url:
         if new_url not in st.session_state.processed_urls:
-            if process_videos([new_url]):
-                st.success("✅ Video added successfully!")
-                st.rerun()
+            if st.button("Add Video", type="primary", use_container_width=True):
+                if process_videos([new_url]):
+                    st.success("✅ Video added successfully!")
+                    st.rerun()
+        else:
+            st.warning("This video is already added")
 
 def display_chat():
     """Display chat interface with fixed input and scrollable messages"""
@@ -377,6 +447,11 @@ def main():
     with st.sidebar:
         st.markdown("# 🎥 YouTube Summarizer")
         st.markdown("---")
+        
+        # Always show video management in sidebar
+        show_video_management()
+        
+        st.markdown("---")
         st.markdown("""
         ## About
         This tool helps you quickly understand multiple YouTube videos by providing AI-powered summaries.
@@ -387,14 +462,10 @@ def main():
         - ⚡ Fast processing
         - 💬 Interactive chat
         """)
-        
-        # Add video management button in sidebar
-        if not st.session_state.show_input and st.button("📝 Manage Videos"):
-            st.session_state.show_input = True
-            st.rerun()
 
     # Main content
-    if st.session_state.show_input:
+    if not st.session_state.summaries:
+        # Show initial input interface only when no videos are processed
         st.title("YouTube Video Summarizer")
         st.markdown("""
         Enter YouTube video URLs below (one per line) to get started. The AI will transcribe the videos, 
@@ -415,25 +486,8 @@ def main():
             urls = [url.strip() for url in youtube_urls.split('\n') if url.strip()]
             process_videos(urls)
     
-    # Display results if available
-    if st.session_state.summaries:
-        if st.session_state.show_input:
-            st.markdown("---")
-        
-        # Show current videos
-        st.markdown("### 🎥 Current Videos")
-        for url in st.session_state.processed_urls:
-            st.markdown(
-                f"""
-                <div class="video-card">
-                    <div class="video-title">📺 {st.session_state.video_titles.get(url, 'Untitled Video')}</div>
-                    <div class="video-url">{url}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        
-        # Simplified tab selection
+    else:
+        # Show only the tabs interface when videos are processed
         tab_options = ["📝 Summaries", "💬 Chat", "🎯 Transcripts"]
         current_tab_index = tab_options.index(st.session_state.current_tab)
         
@@ -445,7 +499,6 @@ def main():
             index=current_tab_index
         )
         
-        # Update current tab if changed
         if selected_tab != st.session_state.current_tab:
             st.session_state.current_tab = selected_tab
             st.rerun()
