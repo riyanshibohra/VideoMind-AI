@@ -29,48 +29,53 @@ st.set_page_config(
 st.markdown("""
     <style>
     .main {
-        padding: 2rem;
+        padding: 1.5rem;
     }
     .stButton > button {
-        width: 100%;
         background-color: #FF0000;
         color: white;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        border: none;
+        transition: background-color 0.3s;
     }
     .stButton > button:hover {
         background-color: #CC0000;
-        color: white;
     }
     .success-message {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background-color: #D4EDDA;
-        color: #155724;
-        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 6px;
+        background-color: #28a745;
+        color: white;
+        margin: 0.5rem 0;
     }
     .error-message {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        background-color: #F8D7DA;
-        color: #721C24;
-    }
-    .copy-btn {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.5rem 1rem;
-        background-color: #FF0000;
+        padding: 0.75rem;
+        border-radius: 6px;
+        background-color: #dc3545;
         color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1rem;
-        margin-top: 1rem;
-        transition: background-color 0.3s ease;
+        margin: 0.5rem 0;
     }
-    .copy-btn:hover {
-        background-color: #CC0000;
+    h1 {
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 1rem !important;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    .stProgress > div > div {
+        background-color: #FF0000;
+    }
+    .stTextInput > div > div > input {
+        background-color: #f8f9fa;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 def copy_to_clipboard(text, key):
     """Helper function to copy text and show success message"""
@@ -89,7 +94,7 @@ def main():
         ## About
         This tool helps you quickly understand YouTube videos by providing AI-powered summaries.
         
-        ### Features:
+        ### Features
         - 🎥 Video transcription
         - 📝 Smart summarization
         - ⚡ Fast processing
@@ -103,31 +108,33 @@ def main():
     """)
     
     # URL input with validation
-    youtube_url = st.text_input("🔗 Enter YouTube Video URL:", 
+    youtube_url = st.text_input("Enter YouTube Video URL", 
                                placeholder="https://www.youtube.com/watch?v=...")
     
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
-        process_button = st.button("🚀 Generate Summary")
+        process_button = st.button("🚀 Generate Summary", use_container_width=True)
     
     if youtube_url and process_button:
         try:
             # Create progress bar
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+            progress_container = st.container()
+            with progress_container:
+                progress_bar = st.progress(0)
+                status_text = st.empty()
             
             # Download video
-            status_text.text("📥 Downloading video...")
+            status_text.info("📥 Downloading video...")
             progress_bar.progress(25)
             video_path = download_mp4_from_youtube(youtube_url)
             
             # Transcribe video
-            status_text.text("🎯 Transcribing video...")
+            status_text.info("🎯 Transcribing video...")
             progress_bar.progress(50)
             transcript = transcribe_video(video_path)
             
             # Generate summary
-            status_text.text("🤖 Generating summary...")
+            status_text.info("🤖 Generating summary...")
             progress_bar.progress(75)
             summary = summarize_text(transcript)
             
@@ -137,54 +144,44 @@ def main():
             
             # Complete
             progress_bar.progress(100)
-            status_text.text("✅ Processing complete!")
+            status_text.success("✅ Processing complete!")
             
             # Clean up
             if os.path.exists(video_path):
                 os.remove(video_path)
                 
         except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-            st.write('<span class="error-message">Please check your URL and try again.</span>', 
-                    unsafe_allow_html=True)
+            st.error("⚠️ An error occurred. Please check your URL and try again.")
+            st.write(f"<span class='error-message'>Details: {str(e)}</span>", unsafe_allow_html=True)
 
     # Display results if available
     if st.session_state.summary and st.session_state.transcript:
-        tab1, tab2 = st.tabs(["📝 Summary", "🎯 Full Transcript"])
+        st.markdown("---")
+        tabs = st.tabs(["📝 Summary", "🎯 Full Transcript"])
         
-        with tab1:
+        with tabs[0]:
             st.markdown("### Video Summary")
             st.markdown(st.session_state.summary)
-            
-            # Copy button for summary with visual feedback
-            col1, col2 = st.columns([1, 4])
+            col1, col2, col3 = st.columns([1, 8, 1])
             with col1:
-                if st.button("📋 Copy Summary", key="copy_summary"):
+                if st.button("📋 Copy", key="copy_summary"):
                     copy_to_clipboard(st.session_state.summary, "summary")
-            
-            if st.session_state.get('show_copy_success_summary', False):
-                st.success("✅ Summary copied to clipboard!")
-                # Reset after 3 seconds
-                import time
-                time.sleep(1)
-                st.session_state['show_copy_success_summary'] = False
+            with col2:
+                if st.session_state.get('show_copy_success_summary', False):
+                    st.success("✅ Summary copied to clipboard!")
+                    st.session_state['show_copy_success_summary'] = False
                 
-        with tab2:
+        with tabs[1]:
             st.markdown("### Full Transcript")
             st.markdown(st.session_state.transcript)
-            
-            # Copy button for transcript with visual feedback
-            col1, col2 = st.columns([1, 4])
+            col1, col2, col3 = st.columns([1, 8, 1])
             with col1:
-                if st.button("📋 Copy Transcript", key="copy_transcript"):
+                if st.button("📋 Copy", key="copy_transcript"):
                     copy_to_clipboard(st.session_state.transcript, "transcript")
-            
-            if st.session_state.get('show_copy_success_transcript', False):
-                st.success("✅ Transcript copied to clipboard!")
-                # Reset after 3 seconds
-                import time
-                time.sleep(1)
-                st.session_state['show_copy_success_transcript'] = False
+            with col2:
+                if st.session_state.get('show_copy_success_transcript', False):
+                    st.success("✅ Transcript copied to clipboard!")
+                    st.session_state['show_copy_success_transcript'] = False
 
 if __name__ == "__main__":
     main() 
