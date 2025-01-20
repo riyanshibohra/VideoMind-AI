@@ -4,6 +4,7 @@ from langchain_community.vectorstores import Pinecone
 from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pinecone import Pinecone as PineconeClient
+from pinecone import ServerlessSpec
 import os
 import hashlib
 import concurrent.futures
@@ -16,18 +17,82 @@ warnings.filterwarnings("ignore")
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+def initialize_pinecone():
+    """Initialize Pinecone index if it doesn't exist"""
+    try:
+        pc = PineconeClient()
+        
+        # Check if index exists
+        existing_indexes = [index.name for index in pc.list_indexes()]
+        
+        if "youtube-summarizer" not in existing_indexes:
+            # Create index with appropriate settings
+            pc.create_index(
+                name="youtube-summarizer",
+                dimension=1536,  # OpenAI embeddings dimension
+                metric="cosine",
+                spec=ServerlessSpec(
+                    cloud="aws",  # AWS us-east-1 environment
+                    region="us-east-1"
+                )
+            )
+            print("Created new Pinecone index: youtube-summarizer")
+    except Exception as e:
+        print(f"Error initializing Pinecone: {str(e)}")
+        raise e
+
+def delete_from_pinecone(session_id=None, url=None, delete_index=False):
+    """Delete vectors from Pinecone
+    Args:
+        session_id: If provided, delete entire namespace
+        url: If provided, delete vectors for specific URL
+        delete_index: If True, delete all vectors from the index
+    """
+    try:
+        # Initialize Pinecone client
+        pc = PineconeClient()
+        
+        # Ensure index exists
+        initialize_pinecone()
+        
+        index = pc.Index("youtube-summarizer")
+        
+        if delete_index:
+            # Delete all vectors from the index
+            index.delete(delete_all=True)
+        elif session_id:
+            # Delete entire namespace
+            index.delete(delete_all=True, namespace=session_id)
+        elif url:
+            # Delete vectors for specific URL
+            index.delete(
+                filter={"source": url},
+                namespace=session_id
+            )
+    except Exception as e:
+        print(f"Error deleting from Pinecone: {str(e)}")
+
+def cleanup_pinecone():
+    """Clean up the entire Pinecone index"""
+    delete_from_pinecone(delete_index=True)
+
 def generate_session_id(urls):
     """Generate a unique session ID from list of URLs"""
     urls_str = "".join(sorted(urls))  # Sort to ensure same ID for same URLs regardless of order
     return hashlib.md5(urls_str.encode()).hexdigest()
 
-def cleanup_temp_files(urls):
-    """Clean up temporary video files"""
+def cleanup_temp_files(urls, session_id=None):
+    """Clean up temporary video files and optionally Pinecone vectors"""
+    # Clean up temp files
     for url in urls:
         url_hash = hashlib.md5(url.encode()).hexdigest()
         filename = f"temp_video_{url_hash}.mp4"
         if os.path.exists(filename):
             os.remove(filename)
+    
+    # Clean up Pinecone vectors if session_id provided
+    if session_id:
+        delete_from_pinecone(session_id=session_id)
 
 def get_cache_path(url):
     """Get cache file path for a URL"""
@@ -139,6 +204,9 @@ def create_vector_store(texts_dict):
     Args:
         texts_dict: Dictionary mapping video URLs to their transcripts
     """
+    # Ensure Pinecone index exists
+    initialize_pinecone()
+    
     # Create text splitter
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
@@ -178,6 +246,9 @@ def create_vector_store(texts_dict):
 
 def get_video_context(query, session_id):
     """Get relevant context from vector store for a query"""
+    # Ensure Pinecone index exists
+    initialize_pinecone()
+    
     # Use cached embeddings
     embeddings = get_embeddings()
     

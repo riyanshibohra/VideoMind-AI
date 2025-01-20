@@ -4,7 +4,9 @@ from src.utils import (
     download_mp4_from_youtube, 
     create_vector_store, 
     cleanup_temp_files,
-    process_video
+    process_video,
+    delete_from_pinecone,
+    cleanup_pinecone
 )
 from src.transcriber import transcribe_video
 from src.summarizer import summarize_text
@@ -15,6 +17,9 @@ import concurrent.futures
 
 # Load environment variables
 load_dotenv()
+
+# Clean up Pinecone index at startup
+cleanup_pinecone()
 
 # Initialize session state
 if 'summaries' not in st.session_state:
@@ -412,6 +417,20 @@ def process_videos(urls):
         cleanup_temp_files(urls)
         return False
 
+def reset_session_state():
+    """Reset all session state variables"""
+    st.session_state.summaries = {}
+    st.session_state.transcripts = {}
+    st.session_state.messages = []
+    st.session_state.chatbot = None
+    if st.session_state.session_id:
+        delete_from_pinecone(session_id=st.session_state.session_id)
+    st.session_state.session_id = None
+    st.session_state.processed_urls = set()
+    st.session_state.show_input = True
+    st.session_state.current_tab = "📝 Summaries"
+    st.session_state.video_titles = {}
+
 def show_video_management():
     """Show the video management interface in the sidebar"""
     st.markdown('<div style="color: white;">', unsafe_allow_html=True)
@@ -419,6 +438,12 @@ def show_video_management():
     # Display current videos with delete buttons
     if st.session_state.processed_urls:
         st.markdown('<h3 style="color: white;">📺 Current Videos</h3>', unsafe_allow_html=True)
+        
+        # Add reset button
+        if st.button("🔄 Reset All", type="secondary", help="Remove all videos and reset"):
+            reset_session_state()
+            st.rerun()
+        
         for url in st.session_state.processed_urls:
             title = st.session_state.video_titles.get(url, 'Untitled Video')
             
@@ -438,10 +463,26 @@ def show_video_management():
             
             with col2:
                 if st.button("🗑️", key=f"delete_{url}", help="Delete video", type="secondary"):
+                    # Delete from Pinecone if we have a session
+                    if st.session_state.session_id:
+                        delete_from_pinecone(session_id=st.session_state.session_id, url=url)
+                    
+                    # Remove from session state
                     st.session_state.processed_urls.remove(url)
                     st.session_state.summaries.pop(url, None)
                     st.session_state.transcripts.pop(url, None)
                     st.session_state.video_titles.pop(url, None)
+                    
+                    # If no videos left, reset session
+                    if not st.session_state.processed_urls:
+                        reset_session_state()
+                    else:
+                        # Recreate vector store with remaining videos
+                        texts_dict = {url: st.session_state.transcripts[url] for url in st.session_state.processed_urls}
+                        vectorstore, session_id = create_vector_store(texts_dict)
+                        st.session_state.session_id = session_id
+                        st.session_state.chatbot = get_chatbot(session_id)
+                    
                     st.rerun()
     else:
         st.markdown('<div style="color: white;">No videos added yet</div>', unsafe_allow_html=True)
