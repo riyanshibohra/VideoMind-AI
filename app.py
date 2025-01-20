@@ -294,6 +294,50 @@ st.markdown("""
         padding-top: 1rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
+    /* Sidebar styles */
+    .sidebar-content {
+        color: white !important;
+    }
+    
+    .sidebar-title {
+        color: white !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .sidebar-about {
+        color: white !important;
+        padding: 1rem 0;
+    }
+    
+    .sidebar-features {
+        color: white !important;
+        margin-top: 1rem;
+    }
+    
+    .add-video-section {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+    
+    .add-video-section label {
+        color: white !important;
+        font-weight: 500;
+    }
+    
+    .stTextInput input {
+        color: black !important;
+    }
+    
+    /* Remove the grey box above YouTube URL */
+    .stTextInput > div:first-child {
+        display: none;
+    }
+    
     </style>
 """, unsafe_allow_html=True)
 
@@ -370,10 +414,11 @@ def process_videos(urls):
 
 def show_video_management():
     """Show the video management interface in the sidebar"""
-    st.markdown("### 📺 Current Videos")
+    st.markdown('<div style="color: white;">', unsafe_allow_html=True)
     
     # Display current videos with delete buttons
     if st.session_state.processed_urls:
+        st.markdown('<h3 style="color: white;">📺 Current Videos</h3>', unsafe_allow_html=True)
         for url in st.session_state.processed_urls:
             title = st.session_state.video_titles.get(url, 'Untitled Video')
             
@@ -383,9 +428,9 @@ def show_video_management():
             with col1:
                 st.markdown(
                     f"""
-                    <div class="sidebar-video-card">
-                        <div class="sidebar-video-title">{title}</div>
-                        <div class="sidebar-video-url">{url}</div>
+                    <div style="background-color: rgba(255, 255, 255, 0.1); padding: 0.75rem; border-radius: 4px; margin-bottom: 0.5rem;">
+                        <div style="color: white; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.25rem; word-break: break-word;">{title}</div>
+                        <div style="color: #8b949e; font-size: 0.8rem; word-break: break-all;">{url}</div>
                     </div>
                     """,
                     unsafe_allow_html=True
@@ -399,11 +444,18 @@ def show_video_management():
                     st.session_state.video_titles.pop(url, None)
                     st.rerun()
     else:
-        st.info("No videos added yet")
+        st.markdown('<div style="color: white;">No videos added yet</div>', unsafe_allow_html=True)
     
     # Add new video section
-    st.markdown("### ➕ Add New Video")
-    new_url = st.text_input("YouTube URL:", key="new_video_url")
+    st.markdown('<h3 style="color: white; margin-bottom: 15px;">➕ Add New Video</h3>', unsafe_allow_html=True)
+    #st.markdown('<div style="background-color: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 8px;">', unsafe_allow_html=True)
+    
+    new_url = st.text_input(
+        "YouTube URL:",
+        key="new_video_url", 
+        placeholder="https://www.youtube.com/watch?v=..."
+    )
+
     if new_url:
         if new_url not in st.session_state.processed_urls:
             if st.button("Add Video", type="primary", use_container_width=True):
@@ -411,7 +463,9 @@ def show_video_management():
                     st.success("✅ Video added successfully!")
                     st.rerun()
         else:
-            st.warning("This video is already added")
+            st.markdown('<div style="color: #ffa07a;">This video is already added</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def display_chat():
     """Display chat interface with fixed input and scrollable messages"""
@@ -445,23 +499,30 @@ def display_chat():
 def main():
     # Sidebar
     with st.sidebar:
-        st.markdown("# 🎥 YouTube Summarizer")
+        st.markdown('<div class="sidebar-content">', unsafe_allow_html=True)
+        st.markdown('<h1 class="sidebar-title">🎥 YouTube Summarizer</h1>', unsafe_allow_html=True)
         st.markdown("---")
         
-        # Always show video management in sidebar
-        show_video_management()
-        
-        st.markdown("---")
-        st.markdown("""
-        ## About
-        This tool helps you quickly understand multiple YouTube videos by providing AI-powered summaries.
-        
-        ### Features
-        - 🎥 Multi-video support
-        - 📝 Smart summarization
-        - ⚡ Fast processing
-        - 💬 Interactive chat
-        """)
+        if st.session_state.summaries:
+            show_video_management()
+        else:
+            st.markdown("""
+            <div class="sidebar-about">
+            <h2>About</h2>
+            <p>This tool helps you quickly understand multiple YouTube videos by providing AI-powered summaries.</p>
+            
+            <div class="sidebar-features">
+            <h3>Features</h3>
+            <ul>
+                <li>🎥 Multi-video support</li>
+                <li>📝 Smart summarization</li>
+                <li>⚡ Fast processing</li>
+                <li>💬 Interactive chat</li>
+            </ul>
+            </div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Main content
     if not st.session_state.summaries:
