@@ -358,6 +358,54 @@ st.markdown("""
         display: none;
     }
     
+    /* Main chat container */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 200px);
+        margin-top: 1rem;
+        background-color: rgba(17, 19, 23, 0.7);
+        border-radius: 0.5rem;
+    }
+    
+    /* Messages area */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* Input area */
+    .chat-input {
+        position: sticky;
+        bottom: 0;
+        background-color: #0E1117;
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: auto;
+    }
+    
+    /* Message styling */
+    .stChatMessage {
+        background-color: transparent !important;
+        padding: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .stChatMessage > div {
+        padding: 0.75rem !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    /* Ensure chat input is visible */
+    .stChatInputContainer {
+        padding: 1rem;
+        background-color: #0E1117;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -522,26 +570,53 @@ def display_chat():
     # Custom CSS for chat layout
     st.markdown("""
         <style>
+        /* Main chat container */
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 600px;
+            height: calc(100vh - 200px);
             margin-top: 1rem;
+            background-color: rgba(17, 19, 23, 0.7);
+            border-radius: 0.5rem;
         }
+        
+        /* Messages area */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 0.5rem;
-            background-color: rgba(17, 19, 23, 0.7);
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
+        
+        /* Input area */
         .chat-input {
             position: sticky;
             bottom: 0;
             background-color: #0E1117;
-            padding: 1rem 0;
+            padding: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+        
+        /* Message styling */
+        .stChatMessage {
+            background-color: transparent !important;
+            padding: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .stChatMessage > div {
+            padding: 0.75rem !important;
+            border-radius: 0.5rem !important;
+        }
+        
+        /* Ensure chat input is visible */
+        .stChatInputContainer {
+            padding: 1rem;
+            background-color: #0E1117;
         }
         </style>
     """, unsafe_allow_html=True)
