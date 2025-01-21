@@ -6,11 +6,14 @@ from src.utils import get_video_context
 
 def create_chat_prompt():
     """Create the chat prompt template"""
-    prompt_template = """You are a helpful AI assistant that answers questions about multiple YouTube videos based on their transcripts. 
+    prompt_template = """You are a helpful AI assistant that answers questions about YouTube videos based on their transcripts. 
     Use the following pieces of context from the video transcripts to answer the question. Each piece of context includes the source video URL.
     If you don't know the answer, just say that you don't know, don't try to make up an answer.
-    When answering, try to combine information from multiple videos if relevant, and mention which video(s) you're getting the information from.
-
+    When answering, try to combine information from multiple videos if relevant.
+    
+    The videos in the current session are:
+    {video_list}
+    
     Context from videos:
     {context}
 
@@ -21,7 +24,7 @@ def create_chat_prompt():
     Assistant:"""
     
     return PromptTemplate(
-        input_variables=["context", "chat_history", "question"],
+        input_variables=["video_list", "context", "chat_history", "question"],
         template=prompt_template
     )
 
@@ -54,8 +57,16 @@ def get_chatbot(session_id):
         # Get relevant context from vector store
         context = get_video_context(user_input, session_id)
         
+        # Get list of current videos
+        from app import st
+        video_list = "\n".join([
+            f"- {st.session_state.video_titles.get(url, 'Untitled Video')} ({url})"
+            for url in st.session_state.processed_urls
+        ])
+        
         # Get response
         response = conversation.predict(
+            video_list=video_list,
             context=context,
             question=user_input
         )
