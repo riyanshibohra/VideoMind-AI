@@ -523,25 +523,30 @@ def display_chat():
     chat_window = st.container()
     
     with chat_window:
-        # Create a container for messages
+        # Display messages first (in reverse order, newest at bottom)
         messages_container = st.container()
-        
-        # Create input container at the bottom
-        input_container = st.container()
-        
-        # Handle chat input first
-        with input_container:
-            if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
-                st.session_state.messages.append({"role": "user", "content": prompt})
-                response = st.session_state.chatbot(prompt)
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.rerun()  # Rerun to update messages immediately
-        
-        # Display messages
         with messages_container:
             for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
+        
+        # Handle chat input
+        if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
+            # Show user message immediately
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            # Show "AI is thinking" message
+            with st.chat_message("assistant"):
+                with st.spinner("Thinking..."):
+                    response = st.session_state.chatbot(prompt)
+            
+            # Add messages to session state
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            # Rerun to update the chat history
+            st.rerun()
 
 def main():
     # Sidebar
