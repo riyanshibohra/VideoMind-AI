@@ -279,7 +279,7 @@ def get_video_context(query, session_id):
     # Search for relevant context
     relevant_docs = vectorstore.similarity_search(
         query,
-        k=5
+        k=10
     )
     
     # Combine relevant texts with source information

@@ -547,9 +547,9 @@ def show_video_management():
         "YouTube URL:",
         key="new_video_url", 
         placeholder="https://www.youtube.com/watch?v=..."
-    )
+    ).strip()
 
-    if new_url:
+    if new_url:  # Only show messages if there's actually a URL entered
         if new_url not in st.session_state.processed_urls:
             if st.button("Add Video", type="primary", use_container_width=True):
                 if process_videos([new_url]):
@@ -568,14 +568,11 @@ def display_chat():
     st.markdown("Ask questions about any of the videos - the AI will combine information from all of them!")
     
     # Messages area (scrollable)
-    st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-    st.markdown('</div>', unsafe_allow_html=True)
     
     # Input area (fixed at bottom)
-    st.markdown('<div class="chat-input">', unsafe_allow_html=True)
     if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
         # Show user message immediately
         with st.chat_message("user"):
@@ -602,7 +599,6 @@ def display_chat():
         
         # Rerun to update the chat history
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
     # Sidebar

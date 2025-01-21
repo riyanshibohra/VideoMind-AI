@@ -13,11 +13,13 @@ def create_chat_prompt():
     The videos in the current session are:
     {video_list}
     
-    Important Instructions:
-    - Since you can see the list of videos above, you should know how many videos are loaded
-    - If there is only one video, do NOT ask which video the user is referring to - it's obviously the only one loaded
-    - Only ask for clarification about which video if there are multiple videos and the question could apply to more than one of them
-    - When answering, try to combine information from multiple videos if relevant and if multiple videos are loaded
+    CRITICAL INSTRUCTIONS:
+    1. Check the video list above carefully before responding
+    2. If there is only one video loaded, NEVER ask which video - just answer about that video
+    3. Only ask for video clarification if BOTH:
+       - There are multiple videos loaded AND
+       - The question could apply to more than one of them
+    4. When multiple videos are loaded, try to combine information from them if relevant
     
     Context from videos:
     {context}
@@ -35,10 +37,18 @@ def create_chat_prompt():
 
 def format_video_list(videos_dict):
     """Format the video list for the prompt"""
-    return "\n".join([
+    if not videos_dict:
+        return "No videos loaded"
+    
+    # Get list of videos
+    video_list = [
         f"- {info['title']} ({url})"
         for url, info in videos_dict.items()
-    ])
+    ]
+    
+    # Add a prefix to make it clearer
+    prefix = "Currently loaded video:" if len(video_list) == 1 else "Currently loaded videos:"
+    return prefix + "\n" + "\n".join(video_list)
 
 def get_chatbot(session_id):
     """Create a chatbot instance for the session"""
