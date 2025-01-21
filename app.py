@@ -563,10 +563,20 @@ def display_chat():
         with st.chat_message("user"):
             st.markdown(prompt)
         
+        # Prepare video information
+        videos_info = {
+            url: {
+                'title': st.session_state.video_titles.get(url, 'Untitled Video'),
+                'transcript': st.session_state.transcripts.get(url, ''),
+                'summary': st.session_state.summaries.get(url, '')
+            }
+            for url in st.session_state.processed_urls
+        }
+        
         # Show "AI is thinking" message
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = st.session_state.chatbot(prompt)
+                response = st.session_state.chatbot(prompt, videos_info)
         
         # Add messages to session state
         st.session_state.messages.append({"role": "user", "content": prompt})

@@ -28,6 +28,13 @@ def create_chat_prompt():
         template=prompt_template
     )
 
+def format_video_list(videos_dict):
+    """Format the video list for the prompt"""
+    return "\n".join([
+        f"- {info['title']} ({url})"
+        for url, info in videos_dict.items()
+    ])
+
 def get_chatbot(session_id):
     """Create a chatbot instance for the session"""
     # Create LLM
@@ -53,16 +60,12 @@ def get_chatbot(session_id):
         verbose=False
     )
     
-    def get_response(user_input):
+    def get_response(user_input, videos_info=None):
         # Get relevant context from vector store
         context = get_video_context(user_input, session_id)
         
-        # Get list of current videos
-        from app import st
-        video_list = "\n".join([
-            f"- {st.session_state.video_titles.get(url, 'Untitled Video')} ({url})"
-            for url in st.session_state.processed_urls
-        ])
+        # Format video list if provided
+        video_list = format_video_list(videos_info) if videos_info else "No videos loaded"
         
         # Get response
         response = conversation.predict(
