@@ -552,12 +552,12 @@ def show_video_management():
     if new_url:  # Only show messages if there's actually a URL entered
         if new_url not in st.session_state.processed_urls:
             if st.button("Add Video", type="primary", use_container_width=True):
-                if process_videos([new_url]):
+                success = process_videos([new_url])
+                if success:
+                    st.session_state.new_video_url = ""  # Clear the input field first
                     st.success("✅ Video added successfully!")
-                    # Clear the input field
-                    st.session_state.new_video_url = ""
-                    st.rerun()
-        else:
+                    st.rerun()  # Rerun after clearing the input
+        elif new_url.strip():  # Only show "already added" if URL is non-empty
             st.markdown('<div style="color: #ffa07a;">This video is already added</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
