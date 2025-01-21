@@ -466,6 +466,9 @@ def process_videos(urls):
             status_text.success("✅ Processing complete!")
             st.session_state.show_input = False
             
+            # Update text input placeholder after successful processing
+            st.session_state.placeholder_text = "Video added! Enter another URL to add more..."
+            
             # Clear the progress indicators and rerun to show tabs
             progress_bar.empty()
             status_text.empty()
@@ -544,10 +547,13 @@ def show_video_management():
     if 'new_video_url' not in st.session_state:
         st.session_state.new_video_url = ""
     
+    if 'placeholder_text' not in st.session_state:
+        st.session_state.placeholder_text = "https://www.youtube.com/watch?v=..."
+    
     new_url = st.text_input(
         "YouTube URL:",
         key="new_video_url", 
-        placeholder="https://www.youtube.com/watch?v=..."
+        placeholder=st.session_state.placeholder_text
     ).strip()
 
     if new_url:  # Only show messages if there's actually a URL entered
