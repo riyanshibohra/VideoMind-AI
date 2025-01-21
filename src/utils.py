@@ -59,18 +59,35 @@ def delete_from_pinecone(session_id=None, url=None, delete_index=False):
         
         if delete_index:
             # Delete all vectors from the index
-            index.delete(delete_all=True)
+            try:
+                index.delete(delete_all=True)
+            except Exception as e:
+                # Ignore 404 errors when deleting
+                if "404" not in str(e):
+                    print(f"Error deleting from Pinecone: {str(e)}")
         elif session_id:
             # Delete entire namespace
-            index.delete(delete_all=True, namespace=session_id)
+            try:
+                index.delete(delete_all=True, namespace=session_id)
+            except Exception as e:
+                # Ignore 404 errors when deleting
+                if "404" not in str(e):
+                    print(f"Error deleting from Pinecone: {str(e)}")
         elif url:
             # Delete vectors for specific URL
-            index.delete(
-                filter={"source": url},
-                namespace=session_id
-            )
+            try:
+                index.delete(
+                    filter={"source": url},
+                    namespace=session_id
+                )
+            except Exception as e:
+                # Ignore 404 errors when deleting
+                if "404" not in str(e):
+                    print(f"Error deleting from Pinecone: {str(e)}")
     except Exception as e:
-        print(f"Error deleting from Pinecone: {str(e)}")
+        # Only print error if it's not a 404
+        if "404" not in str(e):
+            print(f"Error deleting from Pinecone: {str(e)}")
 
 def cleanup_pinecone():
     """Clean up the entire Pinecone index"""
