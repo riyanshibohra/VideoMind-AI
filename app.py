@@ -541,10 +541,8 @@ def show_video_management():
     # Add new video section
     st.markdown('<h3 style="color: white; margin-bottom: 15px;">➕ Add New Video</h3>', unsafe_allow_html=True)
     
-    # Initialize key in session state if not exists
     if 'new_video_url' not in st.session_state:
         st.session_state.new_video_url = ""
-    
     
     new_url = st.text_input(
         "YouTube URL:",
@@ -552,17 +550,10 @@ def show_video_management():
         placeholder="https://www.youtube.com/watch?v=..."
     ).strip()
 
-    
-        
-
     if new_url:  # Only show messages if there's actually a URL entered
         if new_url not in st.session_state.processed_urls:
             if st.button("Add Video", type="primary", use_container_width=True):
-                success = process_videos([new_url])
-                if success:
-                    st.session_state.new_video_url = ""  # Clear input first
-                    st.success("✅ Video added successfully!")
-                    st.experimental_rerun()  # Use experimental_rerun instead of rerun
+                process_videos([new_url])
         elif new_url.strip():  # Only show "already added" if URL is non-empty
             st.markdown('<div style="color: #ffa07a;">This video is already added</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
