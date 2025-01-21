@@ -61,6 +61,8 @@ if 'tab_key' not in st.session_state:
     st.session_state.tab_key = 0
 if 'video_titles' not in st.session_state:
     st.session_state.video_titles = {}
+if 'enter_url' not in st.session_state:
+    st.session_state.enter_url = ""
 
 # Page configuration
 st.set_page_config(
@@ -543,20 +545,24 @@ def show_video_management():
     if 'new_video_url' not in st.session_state:
         st.session_state.new_video_url = ""
     
+    
     new_url = st.text_input(
         "YouTube URL:",
         key="new_video_url", 
         placeholder="https://www.youtube.com/watch?v=..."
     ).strip()
 
+    
+        
+
     if new_url:  # Only show messages if there's actually a URL entered
         if new_url not in st.session_state.processed_urls:
             if st.button("Add Video", type="primary", use_container_width=True):
                 success = process_videos([new_url])
                 if success:
-                    st.session_state.new_video_url = ""  # Clear the input field first
+                    st.session_state.new_video_url = ""  # Clear input first
                     st.success("✅ Video added successfully!")
-                    st.rerun()  # Rerun after clearing the input
+                    st.experimental_rerun()  # Use experimental_rerun instead of rerun
         elif new_url.strip():  # Only show "already added" if URL is non-empty
             st.markdown('<div style="color: #ffa07a;">This video is already added</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
