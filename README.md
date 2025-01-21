@@ -57,7 +57,7 @@ youtube-video-summarizer/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/youtube-video-summarizer.git
+git clone https://github.com/riyanshibohra/youtube-video-summarizer.git
 cd youtube-video-summarizer
 ```
 

@@ -547,13 +547,10 @@ def show_video_management():
     if 'new_video_url' not in st.session_state:
         st.session_state.new_video_url = ""
     
-    if 'placeholder_text' not in st.session_state:
-        st.session_state.placeholder_text = "https://www.youtube.com/watch?v=..."
-    
     new_url = st.text_input(
         "YouTube URL:",
         key="new_video_url", 
-        placeholder=st.session_state.placeholder_text
+        placeholder="https://www.youtube.com/watch?v=..."
     ).strip()
 
     if new_url:  # Only show messages if there's actually a URL entered
