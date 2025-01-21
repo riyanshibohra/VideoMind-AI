@@ -519,34 +519,64 @@ def display_chat():
     st.markdown("### Chat about All Videos")
     st.markdown("Ask questions about any of the videos - the AI will combine information from all of them!")
     
-    # Create the main chat window
-    chat_window = st.container()
+    # Custom CSS for chat layout
+    st.markdown("""
+        <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            margin-top: 1rem;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            background-color: rgba(17, 19, 23, 0.7);
+        }
+        .chat-input {
+            position: sticky;
+            bottom: 0;
+            background-color: #0E1117;
+            padding: 1rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        </style>
+    """, unsafe_allow_html=True)
     
-    with chat_window:
-        # Display messages first (in reverse order, newest at bottom)
-        messages_container = st.container()
-        with messages_container:
-            for message in st.session_state.messages:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
+    # Create chat container
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    
+    # Messages area (scrollable)
+    st.markdown('<div class="chat-messages">', unsafe_allow_html=True)
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Input area (fixed at bottom)
+    st.markdown('<div class="chat-input">', unsafe_allow_html=True)
+    if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
+        # Show user message immediately
+        with st.chat_message("user"):
+            st.markdown(prompt)
         
-        # Handle chat input
-        if prompt := st.chat_input("Ask a question about the videos...", key="chat_input"):
-            # Show user message immediately
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            
-            # Show "AI is thinking" message
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    response = st.session_state.chatbot(prompt)
-            
-            # Add messages to session state
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            
-            # Rerun to update the chat history
-            st.rerun()
+        # Show "AI is thinking" message
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                response = st.session_state.chatbot(prompt)
+        
+        # Add messages to session state
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        
+        # Rerun to update the chat history
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
     # Sidebar
