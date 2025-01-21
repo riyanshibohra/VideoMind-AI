@@ -1,18 +1,26 @@
 # YouTube Video Summarizer
 
-A Python-based project that automatically generates concise summaries of YouTube videos using state-of-the-art AI technologies.
+A powerful tool that helps you quickly understand multiple YouTube videos through AI-powered summaries and interactive chat.
 
 ## Overview
 This project combines OpenAI's Whisper for accurate speech-to-text transcription with LangChain's powerful language processing capabilities to create meaningful summaries of YouTube video content. 
 
-By automating the summarization process, users can quickly grasp the key points of any YouTube video without watching the entire content.
-
 ## Key Features
-- 🎥 Automatic YouTube video download and audio extraction
-- 🗣️ High-quality speech-to-text transcription using Whisper
-- 🤖 Intelligent summarization powered by LangChain
-- ⚡ Support for various video lengths and content types
-- 🎯 Easy-to-use web interface built with Streamlit
+
+- 🎥 **Multi-video Support**: Process multiple YouTube videos simultaneously
+- 📝 **Smart Summarization**: Get concise summaries of video content
+- 💬 **Interactive Chat**: Ask questions about any of the processed videos
+- 📜 **Full Transcripts**: Access complete transcripts of all videos
+- ⚡ **Fast Processing**: Efficient parallel processing of videos
+- 🔄 **Video Management**: Add or remove videos dynamically
+- 📋 **Copy Functionality**: Easy copying of summaries and transcripts
+
+## How It Works
+
+1. **Video Processing**: The system downloads YouTube videos and transcribes them using OpenAI's Whisper
+2. **Summarization**: AI generates concise summaries of the video content
+3. **Interactive Chat**: Ask questions about any video - the AI combines information from all processed videos
+4. **Management**: Add or remove videos anytime through the sidebar
 
 ## Project Structure
 ```
@@ -25,17 +33,25 @@ youtube-video-summarizer/
 ├── data/                # Data directory
 │   ├── temp/           # Temporary files
 │   └── transcripts/    # Stored transcripts
-├── tests/              # Test files
 ├── requirements.txt    # Project dependencies
 ├── README.md          # Project documentation
 ├── LICENSE            # MIT License
 └── .env              # Environment variables (not tracked in git)
 ```
 
-## Prerequisites
-- Python 3.8 or higher
+## Technologies Used
+
+- OpenAI's Whisper - For speech-to-text transcription
+- LangChain - For AI chat and summarization
+- Streamlit - For the web interface
+- FFmpeg - For audio processing
+
+## Requirements
+
+- Python 3.7+
 - OpenAI API key
-- FFmpeg (for audio processing)
+- FFmpeg
+- Required Python packages (see requirements.txt)
 
 ## Installation
 
@@ -71,29 +87,17 @@ streamlit run app.py
 
 2. Open your web browser and navigate to the provided local URL (typically http://localhost:8501)
 
-3. Enter a YouTube video URL and click "Generate Summary"
+3. Enter YouTube video URLs:
+   - Add a single video URL in the sidebar
+   - Or paste multiple URLs in the main interface
+   - Click "Process Videos" to start analysis
 
-## How It Works
-1. The system downloads the YouTube video and extracts its audio
-2. Whisper processes the audio to generate accurate transcriptions
-3. LangChain analyzes the transcription and creates a coherent summary
-4. The summary is presented to the user in an easily digestible format
-
-## Technologies Used
-- Python
-- OpenAI's Whisper - For accurate speech-to-text transcription
-- LangChain - For advanced language processing and summarization
-- Streamlit - For the web interface
-- yt-dlp - For YouTube video downloading
-- FFmpeg - For audio processing
-
-## Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+4. Explore the features:
+   - View summaries in the "Summaries" tab
+   - Chat with AI about the videos in the "Chat" tab
+   - Access full transcripts in the "Transcripts" tab
+   - Manage videos through the sidebar
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
-- OpenAI for Whisper
-- LangChain community
-- Streamlit team
+This project is licensed under the MIT License.
