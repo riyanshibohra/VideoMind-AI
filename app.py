@@ -362,10 +362,11 @@ st.markdown("""
     .chat-container {
         display: flex;
         flex-direction: column;
-        height: calc(100vh - 200px);
-        margin-top: 1rem;
+        height: calc(100vh - 300px);
         background-color: rgba(17, 19, 23, 0.7);
         border-radius: 0.5rem;
+        margin: 1rem 0;
+        overflow: hidden;
     }
     
     /* Messages area */
@@ -373,7 +374,6 @@ st.markdown("""
         flex: 1;
         overflow-y: auto;
         padding: 1rem;
-        margin-bottom: 0;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
@@ -386,7 +386,6 @@ st.markdown("""
         background-color: #0E1117;
         padding: 1rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
-        margin-top: auto;
     }
     
     /* Message styling */
@@ -399,12 +398,27 @@ st.markdown("""
     .stChatMessage > div {
         padding: 0.75rem !important;
         border-radius: 0.5rem !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
     }
     
-    /* Ensure chat input is visible */
+    /* User message specific styling */
+    .stChatMessage[data-testid="user-message"] > div {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Ensure chat input is visible and properly styled */
     .stChatInputContainer {
-        padding: 1rem;
-        background-color: #0E1117;
+        padding: 0.5rem;
+        background-color: transparent;
+    }
+    
+    /* Hide default streamlit margins */
+    .main > div {
+        padding-top: 0.5rem !important;
+    }
+    
+    .stMarkdown {
+        margin-bottom: 0.5rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -566,60 +580,6 @@ def display_chat():
     """Display chat interface with fixed input and scrollable messages"""
     st.markdown("### Chat about All Videos")
     st.markdown("Ask questions about any of the videos - the AI will combine information from all of them!")
-    
-    # Custom CSS for chat layout
-    st.markdown("""
-        <style>
-        /* Main chat container */
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 200px);
-            margin-top: 1rem;
-            background-color: rgba(17, 19, 23, 0.7);
-            border-radius: 0.5rem;
-        }
-        
-        /* Messages area */
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            margin-bottom: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        /* Input area */
-        .chat-input {
-            position: sticky;
-            bottom: 0;
-            background-color: #0E1117;
-            padding: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: auto;
-        }
-        
-        /* Message styling */
-        .stChatMessage {
-            background-color: transparent !important;
-            padding: 0.5rem !important;
-            margin-bottom: 0.5rem !important;
-        }
-        
-        .stChatMessage > div {
-            padding: 0.75rem !important;
-            border-radius: 0.5rem !important;
-        }
-        
-        /* Ensure chat input is visible */
-        .stChatInputContainer {
-            padding: 1rem;
-            background-color: #0E1117;
-        }
-        </style>
-    """, unsafe_allow_html=True)
     
     # Create chat container
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
