@@ -57,8 +57,8 @@ youtube-video-summarizer/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/riyanshibohra/youtube-video-summarizer.git
-cd youtube-video-summarizer
+git clone https://github.com/riyanshibohra/video-mind-AI.git
+cd video-mind-AI
 ```
 
 2. Create and activate a virtual environment:
