@@ -1,4 +1,4 @@
-# YouTube Video Summarizer
+# Video Mind AI 🎥🧠
 
 A powerful tool that helps you quickly understand multiple YouTube videos through AI-powered summaries and interactive chat.
 
