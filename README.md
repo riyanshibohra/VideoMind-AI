@@ -5,6 +5,10 @@ A powerful tool that helps you quickly understand multiple YouTube videos throug
 ## Overview
 This project combines OpenAI's Whisper for accurate speech-to-text transcription with LangChain's powerful language processing capabilities to create meaningful summaries of YouTube video content. 
 
+## Demo
+
+https://user-images.githubusercontent.com/riyanshibohra/video-mind-AI/assets/demo.mp4
+
 ## Key Features
 
 - 🎥 **Multi-video Support**: Process multiple YouTube videos simultaneously
