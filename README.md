@@ -3,7 +3,9 @@
 
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/Whisper-4B32C3?style=for-the-badge&logo=openai&logoColor=white" />
   <img src="https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white" />
+  <img src="https://img.shields.io/badge/Pinecone-000000?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDggNmw0IDR2MTJjNi02IDYtMTYtNC0yMHptMCAwTDE2IDZsLTQgNFYyMmMtNi02LTYtMTYgNC0yMHoiLz48L3N2Zz4=&logoColor=white" />
   <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" />
   <img src="https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white" />
 
@@ -13,8 +15,6 @@
     <b>Video Processing | AI Summarization | Interactive Chat</b>
   </p>
 </div>
-
-A powerful tool that helps you quickly understand multiple YouTube videos through AI-powered summaries and interactive chat.
 
 ## Overview
 This project combines OpenAI's Whisper for accurate speech-to-text transcription with LangChain's powerful language processing capabilities to create meaningful summaries of YouTube video content. 
@@ -32,6 +32,57 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 - ⚡ **Fast Processing**: Efficient parallel processing of videos
 - 🔄 **Video Management**: Add or remove videos dynamically
 - 📋 **Copy Functionality**: Easy copying of summaries and transcripts
+
+```mermaid
+    graph TD
+        subgraph Frontend
+            A[Streamlit UI] --> B[Video Input]
+            A --> C[Summary View]
+            A --> D[Chat Interface]
+            A --> E[Transcript View]
+        end
+
+        subgraph Core Processing
+            F[Video Processor]
+            G[Transcriber]
+            H[Summarizer]
+            I[Chat Engine]
+        end
+
+        subgraph Storage
+            J[(Pinecone Vector DB)]
+            K[Local Cache]
+        end
+
+        subgraph External Services
+            L[YouTube]
+            M[OpenAI API]
+        end
+
+        %% Frontend to Core
+        B --> F
+        
+        %% Core Processing Flow
+        F --> L
+        F --> G
+        G --> M
+        G --> H
+        H --> M
+        
+        %% Storage Interactions
+        F --> K
+        G --> K
+        I --> J
+        
+        %% Chat Flow
+        D --> I
+        I --> M
+        I --> J
+
+        %% Data Display
+        K --> C
+        K --> E
+```
 
 ## How It Works
 
