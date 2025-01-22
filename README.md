@@ -35,44 +35,18 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 
 ```mermaid
 graph TD
-    subgraph Frontend
-        A[Streamlit UI] --> B[Video Input]
-        A --> C[Summary View]
-        A --> D[Chat Interface]
-        A --> E[Transcript View]
-    end
-
-    subgraph Core_Processing
-        F[Video Processor]
-        G[Transcriber]
-        H[Summarizer]
-        I[Chat Engine]
-    end
-
-    subgraph Storage
-        J[(Pinecone Vector DB)]
-        K[Local Cache]
-    end
-
-    subgraph External_Services
-        L[YouTube]
-        M[OpenAI API]
-    end
-
-    B --> F
-    F --> L
-    F --> G
-    G --> M
-    G --> H
-    H --> M
-    F --> K
-    G --> K
-    I --> J
-    D --> I
-    I --> M
-    I --> J
-    K --> C
-    K --> E
+    A[Streamlit UI] --> B[Video Input]
+    B --> C[Video Processor]
+    C --> D[YouTube Download]
+    C --> E[Whisper Transcription]
+    E --> F[AI Summarization]
+    
+    G[Chat Interface] --> H[Chat Engine]
+    H --> I[(Vector Database)]
+    H --> J[OpenAI API]
+    
+    E --> I
+    F --> I
 ```
 ## How It Works
 
