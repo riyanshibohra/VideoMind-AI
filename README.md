@@ -50,7 +50,9 @@ graph TD
     
     G[Chat Interface] --> H[Chat Engine]
     H --> I[(Vector Database)]
+    I --> H
     H --> J[OpenAI API]
+    J --> H
     
     E --> I
     F --> I
