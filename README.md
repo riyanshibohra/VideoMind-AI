@@ -33,12 +33,19 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 - 🔄 **Video Management**: Add or remove videos dynamically
 - 📋 **Copy Functionality**: Easy copying of summaries and transcripts
 
+## How It Works
+
+1. **Video Processing**: The system downloads YouTube videos and transcribes them using OpenAI's Whisper
+2. **Summarization**: AI generates concise summaries of the video content
+3. **Interactive Chat**: Ask questions about any video - the AI combines information from all processed videos
+4. **Management**: Add or remove videos anytime through the sidebar
+
 ```mermaid
 graph TD
     A[Streamlit UI] --> B[Video Input]
     B --> C[Video Processor]
     C --> D[YouTube Download]
-    C --> E[Whisper Transcription]
+    D --> E[Whisper Transcription]
     E --> F[AI Summarization]
     
     G[Chat Interface] --> H[Chat Engine]
@@ -48,12 +55,6 @@ graph TD
     E --> I
     F --> I
 ```
-## How It Works
-
-1. **Video Processing**: The system downloads YouTube videos and transcribes them using OpenAI's Whisper
-2. **Summarization**: AI generates concise summaries of the video content
-3. **Interactive Chat**: Ask questions about any video - the AI combines information from all processed videos
-4. **Management**: Add or remove videos anytime through the sidebar
 
 ## Project Structure
 ```
