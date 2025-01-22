@@ -1,9 +1,7 @@
 # Environment
 .env
 venv/
-env/
 .venv/
-ENV/
 
 cache/
 

@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 from src.utils import (
     download_mp4_from_youtube, 
     create_vector_store, 
@@ -14,7 +13,6 @@ from src.chat import get_chatbot
 from dotenv import load_dotenv
 import pyperclip
 import concurrent.futures
-import uuid
 
 def reset_session_state():
     """Reset all session state variables"""
