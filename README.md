@@ -7,7 +7,7 @@ This project combines OpenAI's Whisper for accurate speech-to-text transcription
 
 ## Demo
 
-https://user-images.githubusercontent.com/riyanshibohra/video-mind-AI/assets/demo.mp4
+https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 
 ## Key Features
 
