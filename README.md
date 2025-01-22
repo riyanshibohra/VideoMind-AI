@@ -1,4 +1,18 @@
-# Video Mind AI 🎥🧠
+<div align="center">
+  <h1>Video Mind AI 🎥🧠</h1>
+
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white" />
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" />
+  <img src="https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white" />
+
+  <h3>Videos to Insights, Instantly. ⚡</h3>
+
+  <p align="center">
+    <b>Video Processing | AI Summarization | Interactive Chat</b>
+  </p>
+</div>
 
 A powerful tool that helps you quickly understand multiple YouTube videos through AI-powered summaries and interactive chat.
 
