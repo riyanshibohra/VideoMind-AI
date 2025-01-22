@@ -28,19 +28,17 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 
 ## Project Structure
 ```
-youtube-video-summarizer/
+video-mind-AI/
 ├── src/                  # Source code
-│   ├── app.py           # Main Streamlit application
 │   ├── transcriber.py   # Handles video transcription using Whisper
 │   ├── summarizer.py    # Manages text summarization with LangChain
 │   └── utils.py         # Utility functions
-├── data/                # Data directory
-│   ├── temp/           # Temporary files
-│   └── transcripts/    # Stored transcripts
-├── requirements.txt    # Project dependencies
-├── README.md          # Project documentation
-├── LICENSE            # MIT License
-└── .env              # Environment variables (not tracked in git)
+│   └── chat.py          # Handles chat with AI
+├── app.py               # Main Streamlit application
+├── .gitignore           # Git ignore file
+├── requirements.txt     # Project dependencies
+├── README.md           # Project documentation
+└── LICENSE             # MIT License
 ```
 
 ## Technologies Used
