@@ -34,56 +34,46 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 - 📋 **Copy Functionality**: Easy copying of summaries and transcripts
 
 ```mermaid
-    graph TD
-        subgraph Frontend
-            A[Streamlit UI] --> B[Video Input]
-            A --> C[Summary View]
-            A --> D[Chat Interface]
-            A --> E[Transcript View]
-        end
+graph TD
+    subgraph Frontend
+        A[Streamlit UI] --> B[Video Input]
+        A --> C[Summary View]
+        A --> D[Chat Interface]
+        A --> E[Transcript View]
+    end
 
-        subgraph Core Processing
-            F[Video Processor]
-            G[Transcriber]
-            H[Summarizer]
-            I[Chat Engine]
-        end
+    subgraph Core_Processing
+        F[Video Processor]
+        G[Transcriber]
+        H[Summarizer]
+        I[Chat Engine]
+    end
 
-        subgraph Storage
-            J[(Pinecone Vector DB)]
-            K[Local Cache]
-        end
+    subgraph Storage
+        J[(Pinecone Vector DB)]
+        K[Local Cache]
+    end
 
-        subgraph External Services
-            L[YouTube]
-            M[OpenAI API]
-        end
+    subgraph External_Services
+        L[YouTube]
+        M[OpenAI API]
+    end
 
-        %% Frontend to Core
-        B --> F
-        
-        %% Core Processing Flow
-        F --> L
-        F --> G
-        G --> M
-        G --> H
-        H --> M
-        
-        %% Storage Interactions
-        F --> K
-        G --> K
-        I --> J
-        
-        %% Chat Flow
-        D --> I
-        I --> M
-        I --> J
-
-        %% Data Display
-        K --> C
-        K --> E
+    B --> F
+    F --> L
+    F --> G
+    G --> M
+    G --> H
+    H --> M
+    F --> K
+    G --> K
+    I --> J
+    D --> I
+    I --> M
+    I --> J
+    K --> C
+    K --> E
 ```
-
 ## How It Works
 
 1. **Video Processing**: The system downloads YouTube videos and transcribes them using OpenAI's Whisper
