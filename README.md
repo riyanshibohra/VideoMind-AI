@@ -43,21 +43,24 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 ```mermaid
 graph TD
     A[Streamlit UI] --> B[Video Input]
+    A --> G[Chat Interface]
     B --> C[Video Processor]
     C --> D[YouTube Download]
     D --> E[Whisper Transcription]
     E --> F[AI Summarization]
+    F --> A
     
     F --> J[OpenAI API]
     J --> F
     F --> I[(Vector Database)]
     E --> I
     
-    G[Chat Interface] --> H[Chat Engine]
+    G --> H[Chat Engine]
     H --> I
     I --> H
     H --> J
     J --> H
+    H --> G
 ```
 
 ## Project Structure
