@@ -46,7 +46,7 @@ def format_video_list(videos_dict):
         for url, info in videos_dict.items()
     ]
     
-    # Add a prefix to make it clearer
+    # Add a prefix
     prefix = "Currently loaded video:" if len(video_list) == 1 else "Currently loaded videos:"
     return prefix + "\n" + "\n".join(video_list)
 
@@ -76,6 +76,7 @@ def get_chatbot(session_id):
     )
     
     def get_response(user_input, videos_info=None):
+        
         # Get relevant context from vector store
         context = get_video_context(user_input, session_id)
         

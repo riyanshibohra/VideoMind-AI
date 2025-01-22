@@ -7,7 +7,6 @@ from pinecone import Pinecone as PineconeClient
 from pinecone import ServerlessSpec
 import os
 import hashlib
-import concurrent.futures
 import json
 from functools import lru_cache
 
@@ -16,6 +15,7 @@ warnings.filterwarnings("ignore")
 # Cache directory for processed videos
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
+
 
 def initialize_pinecone():
     """Initialize Pinecone index if it doesn't exist"""
@@ -41,6 +41,15 @@ def initialize_pinecone():
         print(f"Error initializing Pinecone: {str(e)}")
         raise e
 
+def _safe_delete_operation(operation_func):
+    """Helper function to handle delete operations with consistent error handling"""
+    try:
+        operation_func()
+    except Exception as e:
+        # Ignore 404 errors when deleting
+        if "404" not in str(e):
+            print(f"Error deleting from Pinecone: {str(e)}")
+
 def delete_from_pinecone(session_id=None, url=None, delete_index=False):
     """Delete vectors from Pinecone
     Args:
@@ -58,32 +67,20 @@ def delete_from_pinecone(session_id=None, url=None, delete_index=False):
         index = pc.Index("youtube-summarizer")
         
         if delete_index:
-            # Delete all vectors from the index
-            try:
-                index.delete(delete_all=True)
-            except Exception as e:
-                # Ignore 404 errors when deleting
-                if "404" not in str(e):
-                    print(f"Error deleting from Pinecone: {str(e)}")
+            _safe_delete_operation(
+                lambda: index.delete(delete_all=True)
+            )
         elif session_id:
-            # Delete entire namespace
-            try:
-                index.delete(delete_all=True, namespace=session_id)
-            except Exception as e:
-                # Ignore 404 errors when deleting
-                if "404" not in str(e):
-                    print(f"Error deleting from Pinecone: {str(e)}")
+            _safe_delete_operation(
+                lambda: index.delete(delete_all=True, namespace=session_id)
+            )
         elif url:
-            # Delete vectors for specific URL
-            try:
-                index.delete(
+            _safe_delete_operation(
+                lambda: index.delete(
                     filter={"source": url},
                     namespace=session_id
                 )
-            except Exception as e:
-                # Ignore 404 errors when deleting
-                if "404" not in str(e):
-                    print(f"Error deleting from Pinecone: {str(e)}")
+            )
     except Exception as e:
         # Only print error if it's not a 404
         if "404" not in str(e):
@@ -142,7 +139,7 @@ def download_mp4_from_youtube(url):
     filename = f"temp_video_{url_hash}.mp4"
     
     ydl_opts = {
-        'format': 'worst[ext=mp4]',  # Use lowest quality to speed up download
+        'format': 'worst[ext=mp4]', 
         'outtmpl': filename,
         'quiet': True,
         'nocheckcertificate': True

@@ -23,7 +23,7 @@ def summarize_text(text):
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]
 
-    # Create and run summarization chain
+    # Create and run summarization chain (using map_reduce)
     chain = load_summarize_chain(llm, chain_type="map_reduce")
     summary = chain.run(docs)
 
