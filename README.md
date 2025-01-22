@@ -40,29 +40,6 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 3. **Interactive Chat**: Ask questions about any video - the AI combines information from all processed videos
 4. **Management**: Add or remove videos anytime through the sidebar
 
-```mermaid
-graph TD
-    A[Streamlit UI] --> B[Video Input]
-    A --> G[Chat Interface]
-    B --> C[Video Processor]
-    C --> D[YouTube Download]
-    D --> E[Whisper Transcription]
-    E --> F[AI Summarization]
-    F --> A
-    
-    F --> J[OpenAI API]
-    J --> F
-    F --> I[(Vector Database)]
-    E --> I
-    
-    G --> H[Chat Engine]
-    H --> I
-    I --> H
-    H --> J
-    J --> H
-    H --> G
-```
-
 ## Project Structure
 ```
 video-mind-AI/
