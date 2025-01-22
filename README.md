@@ -48,14 +48,16 @@ graph TD
     D --> E[Whisper Transcription]
     E --> F[AI Summarization]
     
-    G[Chat Interface] --> H[Chat Engine]
-    H --> I[(Vector Database)]
-    I --> H
-    H --> J[OpenAI API]
-    J --> H
-    
+    F --> J[OpenAI API]
+    J --> F
+    F --> I[(Vector Database)]
     E --> I
-    F --> I
+    
+    G[Chat Interface] --> H[Chat Engine]
+    H --> I
+    I --> H
+    H --> J
+    J --> H
 ```
 
 ## Project Structure
