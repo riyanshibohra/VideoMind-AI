@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/9cd8bd42-90fe-4293-8efa-abbc6469ef15
 
 ## Project Structure
 ```
-video-mind-AI/
+VideoMind-AI/
 ├── src/                  # Source code
 │   ├── transcriber.py   # Handles video transcription using Whisper
 │   ├── summarizer.py    # Manages text summarization with LangChain
@@ -73,8 +73,8 @@ video-mind-AI/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/riyanshibohra/video-mind-AI.git
-cd video-mind-AI
+git clone https://github.com/riyanshibohra/VideoMind-AI.git
+cd VideoMind-AI
 ```
 
 2. Create and activate a virtual environment:
